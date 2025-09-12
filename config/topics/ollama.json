@@ -1,0 +1,22 @@
+{
+  "name": "ollama",
+  "slug": "ollama",
+  "enabled": true,
+  "assistantId": "asst_l1TxKEzY72duoKdYomIB1aw0",
+  "lookbackDays": 7,
+  "sources": [
+    {
+      "name": "repo",
+      "type": "github",
+      "url": "https://github.com/ollama/ollama/releases",
+      "enabled": true
+    }
+  ],
+  "channels": {
+    "slack": {
+      "channels": [
+        "#news-agent"
+      ]
+    }
+  }
+}

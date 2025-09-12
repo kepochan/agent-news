@@ -1,0 +1,22 @@
+{
+  "lookbackDays": 7,
+  "defaultSchedule": {
+    "cron": "0 9 * * 1,3",
+    "timezone": "Europe/Paris"
+  },
+  "openai": {
+    "maxItemsPerRun": 60,
+    "maxCharsPerItem": 2000,
+    "timeoutSeconds": 120,
+    "retryAttempts": 3
+  },
+  "slack": {
+    "defaultChannel": "#news-alerts",
+    "postAsFileOver": 4000,
+    "retryAttempts": 3
+  },
+  "deduplication": {
+    "simHashThreshold": 0.92,
+    "lookbackDays": 30
+  }
+}

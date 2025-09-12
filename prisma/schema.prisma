@@ -1,0 +1,139 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Topic {
+  id            String    @id @default(uuid())
+  name          String    @unique
+  slug          String    @unique
+  enabled       Boolean   @default(true)
+  assistantId   String?   @map("assistant_id")
+  config        Json      // Complete topic configuration
+  lookbackDays  Int       @default(7) @map("lookback_days")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  
+  sources       Source[]
+  runs          Run[]
+  tasks         Task[]
+  
+  @@map("topics")
+}
+
+model Source {
+  id        String   @id @default(uuid())
+  topicId   String   @map("topic_id")
+  name      String
+  type      String   // 'rss', 'github', 'discord', 'content_monitor'
+  url       String
+  enabled   Boolean  @default(true)
+  meta      Json?    // Source-specific configuration
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  topic     Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  items     Item[]
+  watermarks Watermark[]
+  
+  @@unique([topicId, name])
+  @@map("sources")
+}
+
+model Item {
+  id          String    @id @default(uuid())
+  sourceId    String    @map("source_id")
+  topicId     String    @map("topic_id") 
+  title       String
+  content     String?
+  url         String?
+  publishedAt DateTime? @map("published_at")
+  contentHash String    @map("content_hash")
+  simHash     String    @map("sim_hash")
+  metadata    Json?     // Additional item-specific data
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  source      Source    @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  runItems    RunItem[]
+  
+  @@unique([sourceId, contentHash])
+  @@unique([topicId, title])
+  @@index([topicId, publishedAt])
+  @@index([simHash])
+  @@map("items")
+}
+
+model Run {
+  id          String    @id @default(uuid())
+  topicId     String    @map("topic_id")
+  status      String    // 'pending', 'running', 'completed', 'failed'
+  startedAt       DateTime? @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+  error           String?
+  logs            String?   // Store execution logs
+  openaiPrompt    String?   @map("openai_prompt")    // Store the prompt sent to OpenAI
+  openaiResponse  String?   @map("openai_response")  // Store OpenAI response
+  metadata        Json?     // Run-specific data (stats, etc.)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  
+  topic       Topic     @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  runItems    RunItem[]
+  
+  @@map("runs")
+}
+
+model RunItem {
+  id              String    @id @default(uuid())
+  runId           String    @map("run_id")
+  itemId          String    @map("item_id")
+  processed       Boolean   @default(false)
+  summary         String?
+  slackMessageId  String?   @map("slack_message_id")
+  error           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  
+  run             Run       @relation(fields: [runId], references: [id], onDelete: Cascade)
+  item            Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  
+  @@unique([runId, itemId])
+  @@map("run_items")
+}
+
+model Watermark {
+  id        String   @id @default(uuid())
+  sourceId  String   @map("source_id")
+  type      String   // 'timestamp', 'id', 'cursor'
+  value     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  source    Source   @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  
+  @@unique([sourceId, type])
+  @@map("watermarks")
+}
+
+model Task {
+  id          String    @id @default(uuid())
+  topicId     String?   @map("topic_id")
+  taskType    String    @map("task_type") // 'process', 'revert'
+  status      String    @default("pending") // 'pending', 'running', 'completed', 'failed'
+  params      Json
+  result      Json?
+  error       String?
+  requester   String    // API key or 'system'
+  createdAt   DateTime  @default(now()) @map("created_at")
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  
+  topic       Topic?    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  
+  @@map("tasks")
+}

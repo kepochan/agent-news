@@ -1,0 +1,33 @@
+{
+  "name": "stellar",
+  "slug": "stellar",
+  "enabled": true,
+  "lookback_days": 7,
+  "sources": [
+    {
+      "name": "core",
+      "type": "github",
+      "url": "https://github.com/stellar/stellar-core",
+      "enabled": true
+    },
+    {
+      "name": "horizon",
+      "type": "github",
+      "url": "https://github.com/stellar/go",
+      "enabled": true
+    },
+    {
+      "name": "dev",
+      "type": "rss",
+      "url": "https://stellar.org/blog/developers/rss.xml",
+      "enabled": true
+    }
+  ],
+  "channels": {
+    "slack": {
+      "channels": [
+        "#news-agent"
+      ]
+    }
+  }
+}

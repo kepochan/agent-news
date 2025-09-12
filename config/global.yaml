@@ -1,0 +1,27 @@
+# Global configuration for the News Agent
+deduplication:
+  lookbackDays: 7
+  simHashThreshold: 0.85
+
+processing:
+  maxItemsPerRun: 100
+  maxProcessingTime: 300000  # 5 minutes in milliseconds
+
+fetching:
+  maxLookbackDays: 7  # Maximum days to look back even with force=true
+
+openai:
+  maxItemsPerRun: 60
+  maxCharsPerItem: 2000
+  timeoutSeconds: 120
+  retryAttempts: 3
+
+slack:
+  maxMessageLength: 3000
+  retryAttempts: 3
+  retryDelay: 1000
+
+api:
+  rateLimit:
+    windowMs: 60000  # 1 minute
+    maxRequests: 100
