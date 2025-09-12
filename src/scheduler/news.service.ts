@@ -71,9 +71,9 @@ export class NewsService {
 
           this.logger.log(`Fetched ${allItems.length} total items for topic: ${topicSlug}`);
 
-          // Filter duplicates
-          const uniqueItems = await this.filterDuplicates(allItems, topic.id);
-          this.logger.log(`${uniqueItems.length} unique items after deduplication`);
+          // Filter duplicates (unless force mode)
+          const uniqueItems = force ? allItems : await this.filterDuplicates(allItems, topic.id);
+          this.logger.log(`${uniqueItems.length} ${force ? 'items (force mode - no deduplication)' : 'unique items after deduplication'}`);
 
           if (uniqueItems.length === 0) {
             await this.prisma.run.update({
@@ -95,6 +95,7 @@ export class NewsService {
 
           // Process with OpenAI if assistant is configured
           let summary = '';
+          let openaiPrompt = '';
           if (topicConfig.assistantId) {
             const processResult = await this.openaiProcessor.processItems(
               uniqueItems,
@@ -103,6 +104,7 @@ export class NewsService {
 
             if (processResult.success) {
               summary = processResult.summary;
+              openaiPrompt = processResult.prompt;
             } else {
               this.logger.error(`OpenAI processing failed: ${processResult.error}`);
             }
@@ -134,6 +136,8 @@ export class NewsService {
                 itemsProcessed: uniqueItems.length,
                 sourcesProcessed: topicConfig.sources.filter(s => s.enabled).length,
                 hasSummary: !!summary,
+                openaiSummary: summary || null,
+                openaiPrompt: openaiPrompt || null,
               },
             },
           });
@@ -311,6 +315,21 @@ export class NewsService {
             runItems: { none: {} }, // No run items reference this item
           },
         });
+
+        // Reset watermarks so items can be refetched after revert
+        const sources = await this.prisma.source.findMany({
+          where: { topicId: topic.id },
+          select: { id: true },
+        });
+
+        if (sources.length > 0) {
+          await this.prisma.watermark.deleteMany({
+            where: {
+              sourceId: { in: sources.map(s => s.id) },
+            },
+          });
+          this.logger.log(`Reset ${sources.length} source watermarks for topic ${topicSlug}`);
+        }
 
         this.logger.log(`Reverted topic ${topicSlug}: deleted ${deletedRuns.count} runs and ${deletedItems.count} items`);
 

@@ -287,6 +287,54 @@ tr:hover {
   margin-right: 0.25rem;
 }
 
+/* Run Posts (Blog-style) */
+.run-post {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-left: 4px solid #e5e5e5;
+  margin-bottom: 1.5rem;
+}
+
+.run-post:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.run-header {
+  border-bottom: 1px solid #f5f5f5;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.run-content {
+  line-height: 1.6;
+}
+
+.run-details {
+  background-color: #fafafa;
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+/* Clickable topic names */
+.topic-name-link {
+  color: #0066cc;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.topic-name-link:hover {
+  color: #0052a3;
+  text-decoration: underline;
+}
+
+/* Status badges */
+.status-error {
+  background-color: #fecaca;
+  color: #dc2626;
+}
+
 /* Flex utilities */
 .flex {
   display: flex;

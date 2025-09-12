@@ -45,6 +45,7 @@ export class OpenAIProcessor {
       if (limitedItems.length === 0) {
         return {
           summary: 'No items to process',
+          prompt: '',
           success: true,
         };
       }
@@ -57,12 +58,14 @@ export class OpenAIProcessor {
 
       return {
         summary,
+        prompt: content,
         success: true,
       };
     } catch (error) {
       this.logger.error('Failed to process items with OpenAI:', error);
       return {
         summary: '',
+        prompt: '',
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       };
@@ -167,12 +170,12 @@ export class OpenAIProcessor {
     const header = `Analyze the following ${items.length} developer news items and create a comprehensive summary for developers.
 
 STRUCTURE REQUIRED:
-## 🔥 Top 5 Critical Updates
+🔥 TOP 5 CRITICAL UPDATES
 - List the 5 most important items (breaking changes, major releases, critical features)
 - Each point should be 1-2 lines maximum
 - Use technical language appropriate for developers
 
-## 📋 Additional Updates
+📋 ADDITIONAL UPDATES
 - List all other relevant items
 - Include minor updates, improvements, and notable changes
 - Keep each point concise but informative
@@ -198,7 +201,7 @@ NEWS ITEMS:
       return itemText;
     }).join('\n');
 
-    const footer = '\n---\nProvide the structured summary with the exact headers shown above:';
+    const footer = '\n---\nProvide the structured summary with the exact headers shown above (no markdown formatting):';
     
     return header + itemsText + footer;
   }

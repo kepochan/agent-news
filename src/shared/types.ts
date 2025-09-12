@@ -101,6 +101,7 @@ export interface DeduplicationResult {
 
 export interface OpenAIProcessResult {
   summary: string;
+  prompt: string;
   success: boolean;
   error?: string;
 }

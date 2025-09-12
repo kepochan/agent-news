@@ -138,7 +138,9 @@ export class RunsController {
         slack_message_id: runItem.slackMessageId,
         error: runItem.error,
       })),
-      openai_prompt: run.openaiPrompt,
+      openai_prompt: run.metadata && typeof run.metadata === 'object' && 'openaiPrompt' in run.metadata 
+        ? (run.metadata as any).openaiPrompt 
+        : (run.openaiPrompt || null),
       openai_response: run.openaiResponse,
       logs: run.logs,
       openai_summary: run.metadata && typeof run.metadata === 'object' && 'openaiSummary' in run.metadata 

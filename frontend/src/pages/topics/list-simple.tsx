@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Play, Edit, Trash2, Plus, RotateCcw } from "lucide-react";
 import { AddTopicModal } from '@/components/AddTopicModal';
 
@@ -12,6 +13,7 @@ interface Topic {
 }
 
 export function TopicsListSimple() {
+  const navigate = useNavigate();
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -62,7 +64,8 @@ export function TopicsListSimple() {
       if (response.ok) {
         const result = await response.json();
         console.log('Process result:', result);
-        alert("Topic processing started!");
+        // Navigate to runs page to show the processing status
+        navigate('/runs');
       } else {
         const error = await response.text();
         console.error('Process error:', error);
@@ -216,7 +219,9 @@ export function TopicsListSimple() {
                 <td>
                   <div>
                     <div className="font-medium text-gray-900">
-                      {topic.name}
+                      <Link to={`/topics/${topic.slug}`} className="topic-name-link">
+                        {topic.name}
+                      </Link>
                     </div>
                     <div className="text-sm text-gray-500">{topic.slug}</div>
                   </div>
