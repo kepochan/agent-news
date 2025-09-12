@@ -364,17 +364,6 @@ export function TopicDetail() {
                       )}
                     </div>
                   </div>
-                  <button
-                    onClick={() => toggleRunExpanded(run.id)}
-                    className="btn btn-sm btn-secondary"
-                    style={{ minWidth: 'auto' }}
-                  >
-                    {expandedRuns.has(run.id) ? (
-                      <ChevronUp className="icon-sm" />
-                    ) : (
-                      <ChevronDown className="icon-sm" />
-                    )}
-                  </button>
                 </div>
               </div>
 
@@ -451,7 +440,7 @@ export function TopicDetail() {
                       ) : (
                         <ChevronDown className="icon-sm" />
                       )}
-                      Show OpenAI Prompt
+                      Show Prompt
                     </button>
                     
                     {expandedPrompts.has(run.id) && (
@@ -492,76 +481,6 @@ export function TopicDetail() {
                 )}
               </div>
 
-              {/* Expandable Fetcher Data Section */}
-              {expandedRuns.has(run.id) && (
-                <div className="run-details" style={{ 
-                  marginTop: '1rem', 
-                  paddingTop: '1rem', 
-                  borderTop: '1px solid #e5e5e5' 
-                }}>
-                  {run.items && run.items.length > 0 && (
-                    <div style={{ marginBottom: '1rem' }}>
-                      <h4 style={{ fontSize: '0.95rem', marginBottom: '0.5rem', color: '#666' }}>
-                        Fetcher Data ({run.items.length} items):
-                      </h4>
-                      <div style={{ 
-                        backgroundColor: '#f9f9f9', 
-                        padding: '0.75rem', 
-                        borderRadius: '4px',
-                        maxHeight: '400px',
-                        overflow: 'auto'
-                      }}>
-                        {run.items.map((item, index) => (
-                          <div key={item.id} style={{ 
-                            marginBottom: index < run.items!.length - 1 ? '0.75rem' : '0',
-                            paddingBottom: index < run.items!.length - 1 ? '0.75rem' : '0',
-                            borderBottom: index < run.items!.length - 1 ? '1px solid #e5e5e5' : 'none'
-                          }}>
-                            <div style={{ fontSize: '0.9rem', fontWeight: '500', marginBottom: '0.25rem' }}>
-                              {item.title}
-                            </div>
-                            <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: '0.25rem' }}>
-                              <a href={item.url} target="_blank" rel="noopener noreferrer" style={{ color: '#0066cc' }}>
-                                {item.url}
-                              </a>
-                            </div>
-                            <div style={{ fontSize: '0.8rem', color: '#888' }}>
-                              {item.source_name} • {new Date(item.published_at).toLocaleString()} • 
-                              <span style={{ color: item.processed ? '#059669' : '#dc2626', fontWeight: '500' }}>
-                                {item.processed ? ' Processed' : ' Not Processed'}
-                              </span>
-                            </div>
-                            {item.summary && (
-                              <div style={{ fontSize: '0.85rem', marginTop: '0.25rem', color: '#444' }}>
-                                Summary: {item.summary}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {run.logs && (
-                    <div>
-                      <h4 style={{ fontSize: '0.95rem', marginBottom: '0.5rem', color: '#666' }}>Logs:</h4>
-                      <div style={{ 
-                        backgroundColor: '#1a1a1a', 
-                        color: '#f5f5f5',
-                        padding: '0.75rem', 
-                        borderRadius: '4px',
-                        fontSize: '0.85rem',
-                        fontFamily: 'monospace',
-                        whiteSpace: 'pre-wrap',
-                        maxHeight: '300px',
-                        overflow: 'auto'
-                      }}>
-                        {run.logs}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           ))
         )}

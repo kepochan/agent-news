@@ -81,6 +81,12 @@ export const EnvConfigSchema = z.object({
   // Database
   DATABASE_URL: z.string().url(),
 
+  // Authentication
+  JWT_SECRET: z.string().min(32),
+  GOOGLE_CLIENT_ID: z.string().min(1),
+  GOOGLE_CLIENT_SECRET: z.string().min(1),
+  BASE_URL: z.string().url().default('http://localhost:8000'),
+
   // Optional services
   DISCORD_BOT_TOKEN: z.string().optional(),
   GITHUB_TOKEN: z.string().optional(),

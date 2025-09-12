@@ -29,6 +29,14 @@ services:
       - API_KEY=${API_KEY:-your-secure-api-key-minimum-32-chars}
       - API_RATE_LIMIT=100
       
+      # Better Auth Configuration
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-your-32-char-secret-key-here-change-this}
+      - BETTER_AUTH_URL=${BETTER_AUTH_URL:-http://localhost:8000}
+      
+      # Google OAuth Configuration
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      
       # Application
       - NODE_ENV=production
       - PORT=3000

@@ -11,6 +11,7 @@ import { TopicsController } from './topics.controller';
 import { RunsController } from './runs.controller';
 import { TasksController } from './tasks.controller';
 import { EventsController } from './events.controller';
+import { MembersController } from './members.controller';
 import { SSEService } from './sse.service';
 
 @Module({
@@ -34,6 +35,7 @@ import { SSEService } from './sse.service';
     RunsController,
     TasksController,
     EventsController,
+    MembersController,
   ],
 })
 export class ApiModule implements OnModuleInit {

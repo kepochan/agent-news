@@ -147,6 +147,22 @@ export class ConfigService implements OnModuleInit {
     return this.envConfig.TZ;
   }
 
+  get jwtSecret(): string {
+    return this.envConfig.JWT_SECRET;
+  }
+
+  get googleClientId(): string {
+    return this.envConfig.GOOGLE_CLIENT_ID;
+  }
+
+  get googleClientSecret(): string {
+    return this.envConfig.GOOGLE_CLIENT_SECRET;
+  }
+
+  get baseUrl(): string {
+    return this.envConfig.BASE_URL;
+  }
+
   // Global configuration getters
   get global(): GlobalConfig {
     return this.globalConfig;
