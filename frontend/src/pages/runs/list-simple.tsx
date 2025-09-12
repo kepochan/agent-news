@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Eye, AlertCircle, CheckCircle, Clock, XCircle } from "lucide-react";
+import { useGeneralSSE } from '@/hooks/useSSE';
 
 interface Run {
   id: string;
@@ -14,12 +15,43 @@ interface Run {
 }
 
 export function RunsListSimple() {
+  const { lastEvent, isConnected } = useGeneralSSE();
   const [runs, setRuns] = useState<Run[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshCounter, setRefreshCounter] = useState(0);
 
   useEffect(() => {
     fetchRuns();
   }, []);
+
+  // Handle SSE events for real-time run updates
+  useEffect(() => {
+    if (!lastEvent) return;
+
+    console.log('SSE Event received on runs page:', lastEvent);
+
+    if (lastEvent.type === 'new-run') {
+      // Add new run to the list
+      fetchRuns();
+    }
+
+    if (lastEvent.type === 'run-update') {
+      // Update existing run status
+      console.log('Processing run-update event:', lastEvent.data);
+      setRuns(prevRuns => 
+        prevRuns.map(run => 
+          run.id === lastEvent.data.runId 
+            ? { ...run, status: lastEvent.data.status, ...lastEvent.data }
+            : run
+        )
+      );
+      
+      // If run is completed, fetch full details
+      if (lastEvent.data.status === 'completed' || lastEvent.data.status === 'failed') {
+        setTimeout(() => fetchRuns(), 1000); // Small delay to ensure data is saved
+      }
+    }
+  }, [lastEvent]);
 
   const fetchRuns = async () => {
     try {
@@ -30,7 +62,9 @@ export function RunsListSimple() {
       if (response.ok) {
         const data = await response.json();
         console.log('Runs data received:', data);
-        setRuns(data);
+        // Force new array to trigger React re-render
+        setRuns([...data]);
+        setRefreshCounter(prev => prev + 1);
       } else {
         console.error('API returned error:', response.status);
       }
@@ -85,7 +119,9 @@ export function RunsListSimple() {
     <div>
       <div className="flex justify-between items-center" style={{ marginBottom: '2rem' }}>
         <div>
-          <h1>Runs History</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <h1>Runs History</h1>
+          </div>
           <p className="subtitle">
             View all processing runs with their results, logs, and OpenAI responses.
           </p>
@@ -131,8 +167,8 @@ export function RunsListSimple() {
             </tr>
           </thead>
           <tbody>
-            {runs.map((run) => (
-              <tr key={run.id}>
+            {runs.map((run, index) => (
+              <tr key={`${run.id}-${run.status}-${refreshCounter}-${index}`}>
                 <td>
                   <div>
                     <div className="font-medium text-gray-900">

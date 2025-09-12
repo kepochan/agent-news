@@ -5,6 +5,13 @@ import { NewsProcessingJob } from './queue.service';
 import { TaskService } from './task.service';
 import { NewsService } from './news.service';
 
+// Global variable to store SSE callback
+let globalSSEBroadcast: ((event: string, data: any) => void) | null = null;
+
+export function setGlobalSSEBroadcast(callback: (event: string, data: any) => void) {
+  globalSSEBroadcast = callback;
+}
+
 @Processor('news-processing')
 export class NewsProcessingProcessor {
   private readonly logger = new Logger(NewsProcessingProcessor.name);
@@ -23,12 +30,35 @@ export class NewsProcessingProcessor {
     try {
       await this.taskService.updateTaskStatus(taskId, 'running');
       
+      // Emit SSE event for run started
+      if (globalSSEBroadcast && topicSlug) {
+        globalSSEBroadcast('run-update', {
+          type: 'run-update',
+          runId: taskId,
+          status: 'running',
+          topicSlug,
+          startedAt: new Date().toISOString()
+        });
+      }
+      
       const result = await this.newsService.processTopic(
         topicSlug!,
         params.force || false,
       );
       
       await this.taskService.updateTaskStatus(taskId, 'completed', result);
+      
+      // Emit SSE event for run completed
+      if (globalSSEBroadcast && topicSlug) {
+        globalSSEBroadcast('run-update', {
+          type: 'run-update',
+          runId: taskId,
+          status: 'completed',
+          topicSlug,
+          completedAt: new Date().toISOString(),
+          result
+        });
+      }
       
       this.logger.log(`Completed processing topic: ${topicSlug}`);
       return result;
@@ -37,6 +67,19 @@ export class NewsProcessingProcessor {
       this.logger.error(`Failed to process topic ${topicSlug}:`, error);
       
       await this.taskService.updateTaskStatus(taskId, 'failed', null, errorMessage);
+      
+      // Emit SSE event for run failed
+      if (globalSSEBroadcast && topicSlug) {
+        globalSSEBroadcast('run-update', {
+          type: 'run-update',
+          runId: taskId,
+          status: 'failed',
+          topicSlug,
+          completedAt: new Date().toISOString(),
+          error: errorMessage
+        });
+      }
+      
       throw error;
     }
   }

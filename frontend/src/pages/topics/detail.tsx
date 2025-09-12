@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useTopicSSE } from '@/hooks/useSSE';
 import { Play, Edit, Trash2, RotateCcw, ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
 import { AddTopicModal } from '@/components/AddTopicModal';
 
@@ -48,6 +49,7 @@ interface Run {
 export function TopicDetail() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { lastEvent, isConnected } = useTopicSSE(slug || '');
   const [topic, setTopic] = useState<Topic | null>(null);
   const [runs, setRuns] = useState<Run[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,6 +65,39 @@ export function TopicDetail() {
       fetchTopicRuns();
     }
   }, [slug]);
+
+  // Handle SSE events
+  useEffect(() => {
+    if (!lastEvent) return;
+
+    console.log('SSE Event received:', lastEvent);
+
+    if (lastEvent.type === 'new-run' && lastEvent.data.run.topicSlug === slug) {
+      // Add new run to the list
+      fetchTopicRuns();
+    }
+
+    if (lastEvent.type === 'run-update' && lastEvent.data.topicSlug === slug) {
+      // Update existing run status
+      setRuns(prevRuns => 
+        prevRuns.map(run => 
+          run.id === lastEvent.data.runId 
+            ? { ...run, status: lastEvent.data.status, ...lastEvent.data }
+            : run
+        )
+      );
+      
+      // If run is completed, fetch full details
+      if (lastEvent.data.status === 'completed' || lastEvent.data.status === 'failed') {
+        setTimeout(() => fetchTopicRuns(), 1000); // Small delay to ensure data is saved
+      }
+    }
+
+    if (lastEvent.type === 'runs-update' && lastEvent.data.topicSlug === slug) {
+      // Full runs update
+      fetchTopicRuns();
+    }
+  }, [lastEvent, slug]);
 
   const fetchTopicDetails = async () => {
     try {

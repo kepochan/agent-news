@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useGeneralSSE } from '@/hooks/useSSE';
 import { Play, Edit, Trash2, Plus, RotateCcw } from "lucide-react";
 import { AddTopicModal } from '@/components/AddTopicModal';
 
@@ -14,6 +15,7 @@ interface Topic {
 
 export function TopicsListSimple() {
   const navigate = useNavigate();
+  const { lastEvent, isConnected } = useGeneralSSE();
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -22,12 +24,9 @@ export function TopicsListSimple() {
   const [revertTopicSlug, setRevertTopicSlug] = useState('');
   const [deleteTopicSlug, setDeleteTopicSlug] = useState('');
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
+  const [refreshCounter, setRefreshCounter] = useState(0);
 
-  useEffect(() => {
-    fetchTopics();
-  }, []);
-
-  const fetchTopics = async () => {
+  const fetchTopics = useCallback(async () => {
     try {
       console.log('Fetching topics from API...');
       const response = await fetch('http://localhost:8000/topics');
@@ -45,7 +44,44 @@ export function TopicsListSimple() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  const updateTopicsFromSSE = useCallback((sseTopics: any[]) => {
+    const updatedTopics = sseTopics.map((topic: any) => ({
+      slug: topic.slug,
+      name: topic.name,
+      enabled: topic.enabled,
+      last_run: topic.last_run,
+      items_count: topic.items_count,
+      runs_count: topic.runs_count
+    }));
+    
+    // Force new array and trigger re-render
+    setTopics(updatedTopics);
+    setRefreshCounter(prev => prev + 1);
+  }, []);
+
+  useEffect(() => {
+    fetchTopics();
+  }, [fetchTopics]);
+
+  // Handle SSE events for topic stats updates
+  useEffect(() => {
+    if (!lastEvent) return;
+
+    console.log('SSE Event received:', lastEvent);
+
+    if (lastEvent.type === 'topic-stats') {
+      // Update topic statistics from SSE
+      const sseTopics = lastEvent.data.topics;
+      updateTopicsFromSSE(sseTopics);
+    }
+
+    if (lastEvent.type === 'new-run' || lastEvent.type === 'run-update') {
+      // Refresh topics to get updated counters
+      fetchTopics();
+    }
+  }, [lastEvent, updateTopicsFromSSE, fetchTopics]);
 
   const handleProcessTopic = async (slug: string) => {
     console.log('Processing topic:', slug);
@@ -188,7 +224,9 @@ export function TopicsListSimple() {
     <div>
       <div className="flex justify-between items-center" style={{ marginBottom: '2rem' }}>
         <div>
-          <h1>Topics</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <h1>Topics</h1>
+          </div>
           <p className="subtitle">
             Manage your news monitoring topics and run processing jobs.
           </p>
@@ -214,8 +252,8 @@ export function TopicsListSimple() {
             </tr>
           </thead>
           <tbody>
-            {topics.map((topic) => (
-              <tr key={topic.slug}>
+            {topics.map((topic, index) => (
+              <tr key={`${topic.slug}-${topic.items_count}-${topic.runs_count}-${refreshCounter}-${index}`}>
                 <td>
                   <div>
                     <div className="font-medium text-gray-900">
