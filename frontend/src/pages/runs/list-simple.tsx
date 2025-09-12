@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Eye, AlertCircle, CheckCircle, Clock, XCircle } from "lucide-react";
 import { useGeneralSSE } from '@/hooks/useSSE';
 
@@ -15,6 +16,7 @@ interface Run {
 }
 
 export function RunsListSimple() {
+  const navigate = useNavigate();
   const { lastEvent, isConnected } = useGeneralSSE();
   const [runs, setRuns] = useState<Run[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,9 +106,9 @@ export function RunsListSimple() {
     return `${Math.round(duration / 3600000)}h`;
   };
 
-  const handleViewRun = (runId: string) => {
-    console.log('View run clicked:', runId);
-    alert(`View Run Details: ${runId} - TODO: Implement run details page`);
+  const handleViewRun = (run: Run) => {
+    // Navigate to topic page with run ID as anchor/scroll target
+    navigate(`/topics/${run.topic_slug}#run-${run.id}`);
   };
 
   if (loading) {
@@ -141,13 +143,6 @@ export function RunsListSimple() {
                   Started {run.started_at ? new Date(run.started_at).toLocaleString() : 'recently'}
                 </span>
               </div>
-              <button
-                onClick={() => handleViewRun(run.id)}
-                className="text-sm"
-                style={{color: '#4f46e5'}}
-              >
-                View Details
-              </button>
             </div>
           ))}
         </div>
@@ -203,13 +198,15 @@ export function RunsListSimple() {
                 </td>
                 <td>
                   <div className="actions">
-                    <button
-                      onClick={() => handleViewRun(run.id)}
-                      className="btn btn-sm btn-primary"
-                    >
-                      <Eye className="icon-sm" />
-                      View
-                    </button>
+                    {run.status !== 'running' && (
+                      <button
+                        onClick={() => handleViewRun(run)}
+                        className="btn btn-sm btn-primary"
+                      >
+                        <Eye className="icon-sm" />
+                        View
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

@@ -200,16 +200,13 @@ export function TopicsListSimple() {
       if (response.ok) {
         const result = await response.json();
         console.log('Revert result:', result);
-        alert(`Topic reverted successfully for period ${period}!`);
         fetchTopics(); // Refresh the list
       } else {
         const error = await response.text();
         console.error('Revert error:', error);
-        alert("Failed to revert topic: " + response.status);
       }
     } catch (error) {
       console.error('Revert exception:', error);
-      alert("Error reverting topic: " + error.message);
     }
     
     setShowRevertModal(false);

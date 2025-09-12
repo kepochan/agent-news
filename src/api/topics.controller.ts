@@ -445,36 +445,9 @@ export class TopicsController {
         body.force || false,
       );
 
-      // Create a run entry in database to track this processing job
-      const run = await this.prisma.run.create({
-        data: {
-          topic: {
-            connectOrCreate: {
-              where: { slug },
-              create: {
-                slug,
-                name: topicConfig.name,
-                enabled: topicConfig.enabled,
-                config: topicConfig as any,
-                assistantId: topicConfig.assistantId,
-                lookbackDays: topicConfig.lookbackDays || 7,
-              },
-            },
-          },
-          status: 'pending',
-        },
-        include: {
-          topic: {
-            select: { slug: true, name: true }
-          }
-        }
-      });
-
-
       return {
         task_id: task.id,
         job_id: job.id,
-        run_id: run.id,
         message: `Processing queued for topic: ${slug}`,
       };
     } catch (error) {

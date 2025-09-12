@@ -64,6 +64,17 @@ export function TopicDetail() {
       fetchTopicDetails();
       fetchTopicRuns();
     }
+
+    // Handle scroll to run if hash is present
+    const hash = window.location.hash;
+    if (hash.startsWith('#run-')) {
+      setTimeout(() => {
+        const element = document.querySelector(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 500); // Small delay to ensure content is loaded
+    }
   }, [slug]);
 
   // Handle SSE events
@@ -222,14 +233,11 @@ export function TopicDetail() {
       });
       
       if (response.ok) {
-        alert(`Topic reverted successfully for period ${period}!`);
         fetchTopicRuns(); // Refresh runs
       } else {
-        alert("Failed to revert topic: " + response.status);
       }
     } catch (error) {
       console.error('Revert exception:', error);
-      alert("Error reverting topic: " + (error as Error).message);
     }
     
     setShowRevertModal(false);
@@ -337,7 +345,7 @@ export function TopicDetail() {
           </div>
         ) : (
           runs.map((run) => (
-            <div key={run.id} className="run-post">
+            <div key={run.id} id={`run-${run.id}`} className="run-post">
               <div className="run-header">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
