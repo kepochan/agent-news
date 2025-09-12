@@ -5,6 +5,8 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { TopicsListSimple } from "@/pages/topics/list-simple";
 import { RunsListSimple } from "@/pages/runs/list-simple";
 import { TopicDetail } from "@/pages/topics/detail";
+import { TopicCreate } from "@/pages/topics/create";
+import { TopicEdit } from "@/pages/topics/edit";
 import { MembersList } from "@/pages/members/list";
 
 function App() {
@@ -21,6 +23,16 @@ function App() {
             <Route path="/topics" element={
               <ProtectedRoute>
                 <TopicsListSimple />
+              </ProtectedRoute>
+            } />
+            <Route path="/topics/create" element={
+              <ProtectedRoute>
+                <TopicCreate />
+              </ProtectedRoute>
+            } />
+            <Route path="/topics/:slug/edit" element={
+              <ProtectedRoute>
+                <TopicEdit />
               </ProtectedRoute>
             } />
             <Route path="/topics/:slug" element={
