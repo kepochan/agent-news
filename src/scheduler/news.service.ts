@@ -93,10 +93,10 @@ export class NewsService {
           // Create run items
           await this.createRunItems(run.id, savedItems);
 
-          // Process with OpenAI if assistant is configured
+          // Process with OpenAI if assistant is configured (topic-specific or global default)
           let summary = '';
           let openaiPrompt = '';
-          if (topicConfig.assistantId) {
+          if (topicConfig.assistantId || this.configService.openaiAssistantId) {
             const processResult = await this.openaiProcessor.processItems(
               uniqueItems,
               topicConfig.assistantId,

@@ -1,4 +1,5 @@
 import { useState, useEffect, createContext, useContext } from 'react';
+import { API_BASE_URL } from '../config/api';
 
 export interface User {
   id: string;
@@ -63,7 +64,7 @@ export function useAuthState() {
       }
 
       // Verify token with backend
-      const response = await fetch('http://localhost:8000/auth/session', {
+      const response = await fetch(`${API_BASE_URL}/auth/session`, {
         headers: getAuthHeaders(),
       });
       
@@ -71,7 +72,7 @@ export function useAuthState() {
         const session = await response.json();
         if (session.user) {
           // Get additional user info from members API
-          const memberResponse = await fetch('http://localhost:8000/members/me', {
+          const memberResponse = await fetch(`${API_BASE_URL}/members/me`, {
             headers: getAuthHeaders(),
           });
           
@@ -82,6 +83,7 @@ export function useAuthState() {
               email: session.user.email,
               name: session.user.name || memberInfo.name,
               role: memberInfo.role || 'user',
+              image: session.user.image,
             });
           } else {
             setUser({
@@ -89,6 +91,7 @@ export function useAuthState() {
               email: session.user.email,
               name: session.user.name,
               role: 'user',
+              image: session.user.image,
             });
           }
         } else {
@@ -109,12 +112,12 @@ export function useAuthState() {
   };
 
   const login = () => {
-    window.location.href = 'http://localhost:8000/auth/google';
+    window.location.href = `${API_BASE_URL}/auth/google`;
   };
 
   const logout = async () => {
     try {
-      await fetch('http://localhost:8000/auth/logout', {
+      await fetch(`${API_BASE_URL}/auth/logout`, {
         method: 'POST',
         headers: getAuthHeaders(),
       });

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Shield, User } from "lucide-react";
+import { API_BASE_URL } from '../../config/api';
 
 interface Member {
   id: string;
@@ -15,8 +16,8 @@ interface Member {
 export function MembersList() {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [showAddRow, setShowAddRow] = useState(false);
   const [newMember, setNewMember] = useState({
     email: '',
     name: '',
@@ -34,7 +35,7 @@ export function MembersList() {
 
   const fetchMembers = async () => {
     try {
-      const response = await fetch('http://localhost:8000/members', {
+      const response = await fetch(`${API_BASE_URL}/members`, {
         headers: getAuthHeaders(),
       });
       
@@ -51,11 +52,14 @@ export function MembersList() {
     }
   };
 
-  const handleAddMember = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleAddMember = async () => {
+    if (!newMember.email.trim()) {
+      alert('Email is required');
+      return;
+    }
+
     try {
-      const response = await fetch('http://localhost:8000/members', {
+      const response = await fetch(`${API_BASE_URL}/members`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -66,7 +70,7 @@ export function MembersList() {
 
       if (response.ok) {
         fetchMembers();
-        setShowAddModal(false);
+        setShowAddRow(false);
         setNewMember({ email: '', name: '', role: 'user' });
       } else {
         const error = await response.text();
@@ -78,9 +82,14 @@ export function MembersList() {
     }
   };
 
+  const handleCancelAdd = () => {
+    setShowAddRow(false);
+    setNewMember({ email: '', name: '', role: 'user' });
+  };
+
   const handleUpdateMember = async (member: Member) => {
     try {
-      const response = await fetch(`http://localhost:8000/members/${member.id}`, {
+      const response = await fetch(`${API_BASE_URL}/members/${member.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +121,7 @@ export function MembersList() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/members/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/members/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       });
@@ -147,7 +156,7 @@ export function MembersList() {
           </p>
         </div>
         <div>
-          <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
+          <button className="btn btn-primary" onClick={() => setShowAddRow(true)}>
             <Plus className="icon-sm" />
             Add Member
           </button>
@@ -167,6 +176,61 @@ export function MembersList() {
             </tr>
           </thead>
           <tbody>
+            {showAddRow && (
+              <tr className="bg-blue-50">
+                <td>
+                  <input
+                    type="email"
+                    placeholder="Enter email address"
+                    value={newMember.email}
+                    onChange={(e) => setNewMember({...newMember, email: e.target.value})}
+                    className="input-sm w-full"
+                    autoFocus
+                  />
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    placeholder="Name (optional)"
+                    value={newMember.name}
+                    onChange={(e) => setNewMember({...newMember, name: e.target.value})}
+                    className="input-sm w-full"
+                  />
+                </td>
+                <td>
+                  <select
+                    value={newMember.role}
+                    onChange={(e) => setNewMember({...newMember, role: e.target.value as 'admin' | 'user'})}
+                    className="input-sm w-full"
+                  >
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </td>
+                <td>
+                  <span className="text-sm text-gray-500">Will be active</span>
+                </td>
+                <td>
+                  <span className="text-sm text-gray-500">-</span>
+                </td>
+                <td>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleAddMember}
+                      className="btn btn-sm btn-success"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={handleCancelAdd}
+                      className="btn btn-sm btn-secondary"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            )}
             {members.map((member) => (
               <tr key={member.id}>
                 <td>
@@ -261,57 +325,6 @@ export function MembersList() {
         </table>
       </div>
 
-      {showAddModal && (
-        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Add New Member</h2>
-              <button className="modal-close" onClick={() => setShowAddModal(false)}>×</button>
-            </div>
-            
-            <form onSubmit={handleAddMember}>
-              <div className="form-group">
-                <label>Email *</label>
-                <input
-                  type="email"
-                  value={newMember.email}
-                  onChange={(e) => setNewMember({...newMember, email: e.target.value})}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Name</label>
-                <input
-                  type="text"
-                  value={newMember.name}
-                  onChange={(e) => setNewMember({...newMember, name: e.target.value})}
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Role</label>
-                <select
-                  value={newMember.role}
-                  onChange={(e) => setNewMember({...newMember, role: e.target.value as 'admin' | 'user'})}
-                >
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-              
-              <div className="modal-actions">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowAddModal(false)}>
-                  Cancel
-                </button>
-                <button type="submit" className="btn btn-primary">
-                  Add Member
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

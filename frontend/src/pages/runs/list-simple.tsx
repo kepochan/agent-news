@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, AlertCircle, CheckCircle, Clock, XCircle } from "lucide-react";
 import { useGeneralSSE } from '@/hooks/useSSE';
+import { API_BASE_URL } from '../../config/api';
 
 interface Run {
   id: string;
@@ -58,7 +59,7 @@ export function RunsListSimple() {
   const fetchRuns = async () => {
     try {
       console.log('Fetching runs from API...');
-      const response = await fetch('http://localhost:8000/runs?limit=50');
+      const response = await fetch(`${API_BASE_URL}/runs?limit=50`);
       console.log('Runs response:', response.status, response.statusText);
       
       if (response.ok) {
@@ -125,7 +126,7 @@ export function RunsListSimple() {
             <h1>Runs History</h1>
           </div>
           <p className="subtitle">
-            View all processing runs with their results, logs, and OpenAI responses.
+            View all processing runs with their results.
           </p>
         </div>
       </div>
@@ -173,12 +174,9 @@ export function RunsListSimple() {
                   </div>
                 </td>
                 <td>
-                  <div className="flex items-center">
-                    {getStatusIcon(run.status)}
-                    <span className={`status-badge status-${run.status}`}>
-                      {run.status}
-                    </span>
-                  </div>
+                  <span className={`status-badge status-${run.status}`}>
+                    {run.status}
+                  </span>
                 </td>
                 <td className="text-sm text-gray-900">
                   {run.items_count}

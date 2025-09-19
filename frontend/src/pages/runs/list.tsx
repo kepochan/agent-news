@@ -75,7 +75,7 @@ export function RunsList() {
         <div className="sm:flex-auto">
           <h1 className="text-2xl font-semibold text-gray-900">Runs History</h1>
           <p className="mt-2 text-sm text-gray-700">
-            View all processing runs with their results, logs, and OpenAI responses.
+            View all processing runs with their results.
           </p>
         </div>
       </div>
@@ -127,16 +127,13 @@ export function RunsList() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          {getStatusIcon(run.status)}
-                          <span
-                            className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                              run.status
-                            )}`}
-                          >
-                            {run.status}
-                          </span>
-                        </div>
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                            run.status
+                          )}`}
+                        >
+                          {run.status}
+                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {run.items_count}
